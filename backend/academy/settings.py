@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
@@ -59,10 +60,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'academy.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR}/db.sqlite3')
 }
 
 AUTH_USER_MODEL = 'api.User'
@@ -82,6 +80,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://suppor-app-backend-production.up.railway.app,https://ithouseadmin.netlify.app,https://ithousesupport.netlify.app,https://ithousestudent.netlify.app').split(',')
 
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8806446478:AAGlP8I-wfrA8qbCpFRafXZ83sur2RKKfV0')
 TELEGRAM_DEFAULT_CHAT_ID = os.environ.get('TELEGRAM_DEFAULT_CHAT_ID', '8541380592')
