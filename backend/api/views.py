@@ -24,6 +24,14 @@ from .permissions import IsAdmin, IsSupport, IsStudent, IsAdminOrSupport
 from .bot import notify_support_free, notify_support_busy
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def setup_view(request):
+    if User.objects.filter(is_superuser=True).exists():
+        return Response({'message': 'Admin already exists'})
+    User.objects.create_superuser(username='admin', password='admin123', role='admin')
+    return Response({'message': 'Admin created: admin / admin123'})
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):

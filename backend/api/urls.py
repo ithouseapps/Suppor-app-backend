@@ -36,6 +36,7 @@ urlpatterns = [
     path('students/<int:student_id>/generate-secret/', views.generate_student_secret_id, name='generate-secret'),
     path('admin/excel/monthly/', views.admin_monthly_excel, name='admin-monthly-excel'),
     path('admin/bot-config/', views.bot_config_view, name='bot-config'),
+    path('setup/', views.setup_view, name='setup'),
 ]
 
 urlpatterns += router.urls
