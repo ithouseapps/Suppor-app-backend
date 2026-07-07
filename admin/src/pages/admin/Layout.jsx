@@ -79,11 +79,7 @@ export default function AdminLayout() {
       <aside className="w-56 bg-white border-r border-slate-200 hidden md:flex flex-col">
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="IT House" className="w-8 h-8 rounded-lg" />
             <div>
               <h2 className="text-base font-bold text-slate-800 leading-tight">IT House</h2>
               <p className="text-xs text-slate-400">Admin panel</p>
@@ -140,11 +136,7 @@ export default function AdminLayout() {
         </header>
         <header className="bg-white border-b border-slate-200 px-4 py-3 md:hidden flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-            </div>
+            <img src="/logo.png" alt="IT House" className="w-7 h-7 rounded-lg" />
             <span className="text-sm font-bold text-slate-800">IT House</span>
           </div>
           <div className="flex items-center gap-2">
