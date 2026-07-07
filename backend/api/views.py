@@ -296,7 +296,8 @@ def start_lesson(request):
         start_time=now,
         scheduled_start=scheduled_start,
         is_active=True,
-        booking_id=serializer.validated_data.get('booking_id')
+        booking_id=serializer.validated_data.get('booking_id'),
+        student_count=serializer.validated_data.get('student_count')
     )
 
     # Update booking if exists
@@ -969,12 +970,14 @@ def admin_monthly_excel(request):
         total_students = student_ids.count()
         student_users = User.objects.filter(id__in=list(student_ids), role='student') if student_ids else []
         active_students = ', '.join(s.get_full_name() or s.username for s in student_users)
+        total_group_count = sum(l.student_count or 0 for l in lessons)
 
         support_data.append({
             'name': support.user.get_full_name() or support.user.username,
             'total_lessons': total_lessons,
             'total_students': total_students,
             'active_students': active_students,
+            'total_group_count': total_group_count,
         })
 
     cell = ws.cell(row=1, column=1, value=f"{month}.{year} hisobot")
@@ -990,8 +993,8 @@ def admin_monthly_excel(request):
         cell.alignment = Alignment(horizontal='center', wrap_text=True)
         cell.border = thin_border
 
-    row_labels = ['Jami darslar', 'Jami studentlar', 'Faol studentlar']
-    fills = [header_fill, header_fill2, header_fill]
+    row_labels = ['Jami darslar', 'Jami studentlar', 'Guruhli studentlar', 'Faol studentlar']
+    fills = [header_fill, header_fill2, header_fill2, header_fill]
     for r, (label, fill) in enumerate(zip(row_labels, fills), 2):
         cell = ws.cell(row=r, column=1, value=label)
         cell.font = Font(bold=True, color='FFFFFF', size=11)
@@ -1004,6 +1007,8 @@ def admin_monthly_excel(request):
                 val = sd['total_lessons']
             elif r == 3:
                 val = sd['total_students']
+            elif r == 4:
+                val = sd['total_group_count']
             else:
                 val = sd['active_students']
             cell = ws.cell(row=r, column=i, value=val)

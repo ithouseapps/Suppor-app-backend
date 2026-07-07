@@ -180,7 +180,7 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'support', 'student', 'subject', 'room',
             'topic', 'comment', 'start_time', 'end_time', 'scheduled_start',
-            'is_active', 'student_name', 'support_name',
+            'is_active', 'student_count', 'student_name', 'support_name',
             'subject_name', 'room_name', 'duration_minutes', 'rating', 'delay_minutes',
         ]
 
@@ -235,6 +235,7 @@ class StartLessonSerializer(serializers.Serializer):
     comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     booking_id = serializers.IntegerField(required=False, allow_null=True)
     scheduled_start = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    student_count = serializers.IntegerField(required=False, allow_null=True)
 
 
 class EndLessonSerializer(serializers.Serializer):

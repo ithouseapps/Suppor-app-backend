@@ -106,6 +106,7 @@ class Lesson(models.Model):
     scheduled_start = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     booking = models.ForeignKey(Booking, on_delete=models.SET_NULL, null=True, blank=True)
+    student_count = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

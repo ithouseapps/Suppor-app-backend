@@ -45,11 +45,12 @@ export default function SupportDashboard() {
   const [activeLesson, setActiveLesson] = useState(null);
   const [support, setSupport] = useState(null);
   const [showStart, setShowStart] = useState(false);
-  const [form, setForm] = useState({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '' });
+  const [form, setForm] = useState({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '', student_count: '' });
   const [todayStats, setTodayStats] = useState({ lessons: 0, students: 0 });
   const [studentStatuses, setStudentStatuses] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [customTime, setCustomTime] = useState(false);
+  const [isGroup, setIsGroup] = useState(false);
   const [mySchedules, setMySchedules] = useState([]);
   const [showScheduleForm, setShowScheduleForm] = useState(false);
   const [scheduleForm, setScheduleForm] = useState({ day_of_week: 0, start_time: '09:00', end_time: '18:00' });
@@ -98,12 +99,14 @@ export default function SupportDashboard() {
         topic: form.topic,
         comment: form.comment,
         scheduled_start: form.scheduled_start || undefined,
+        student_count: isGroup ? Number(form.student_count) : null,
       };
       const res = await startLesson(payload);
       setActiveLesson(res.data);
       setShowStart(false);
-      setForm({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '' });
+      setForm({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '', student_count: '' });
       setCustomTime(false);
+      setIsGroup(false);
       addNotification('success', `Dars boshlandi: ${res.data.student_name} - ${res.data.topic}`);
       load();
     } catch (err) {
@@ -258,6 +261,19 @@ export default function SupportDashboard() {
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all placeholder-slate-400" required />
               </div>
               <label className="flex items-center gap-2.5 py-1">
+                <input type="checkbox" checked={isGroup} onChange={() => setIsGroup(!isGroup)}
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/20" />
+                <span className="text-sm text-slate-600">Guruhli dars</span>
+              </label>
+              {isGroup && (
+                <div>
+                  <label className="text-[11px] font-medium text-slate-500 mb-1 block">Nechta student</label>
+                  <input type="number" min="1" placeholder="Studentlar soni" value={form.student_count}
+                    onChange={(e) => setForm({ ...form, student_count: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all placeholder-slate-400" />
+                </div>
+              )}
+              <label className="flex items-center gap-2.5 py-1">
                 <input type="checkbox" checked={customTime} onChange={() => setCustomTime(!customTime)}
                   className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-600/20" />
                 <span className="text-sm text-slate-600">Boshqa vaqtni belgilash</span>
@@ -285,7 +301,7 @@ export default function SupportDashboard() {
                 <button type="submit" className="flex-1 bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-sm">
                   Boshlash
                 </button>
-                <button type="button" onClick={() => { setShowStart(false); setForm({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '' }); }}
+                <button type="button" onClick={() => { setShowStart(false); setForm({ student_name: '', student_id: '', topic: '', comment: '', scheduled_start: '', student_count: '' }); setIsGroup(false); }}
                   className="px-6 bg-slate-100 text-slate-600 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-200 active:scale-[0.98] transition-all">
                   Bekor qilish
                 </button>
