@@ -1,0 +1,17 @@
+{
+  "name": "IT House Student",
+  "short_name": "IT Student",
+  "description": "IT House Academy - Student portal",
+  "start_url": "/student/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
