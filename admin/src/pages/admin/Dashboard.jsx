@@ -34,7 +34,7 @@ export default function AdminDashboard() {
         body: wasBusy
           ? `${support.user.username} darsni tugatdi!`
           : `${support.user.username} dars boshladi!`,
-        icon: '/vite.svg',
+        icon: '/logo.png',
       });
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission();
