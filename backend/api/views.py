@@ -986,11 +986,23 @@ def admin_monthly_excel(request):
         total_students = student_ids.count()
         student_users = User.objects.filter(id__in=list(student_ids), role='student') if student_ids else []
         active_students = ', '.join(s.get_full_name() or s.username for s in student_users)
-        total_minutes = 0
+        total_seconds = 0
         for lesson in lessons:
             if lesson.end_time:
                 delta = lesson.end_time - lesson.start_time
-                total_minutes += int(delta.total_seconds() / 60)
+                total_seconds += int(delta.total_seconds())
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        secs = total_seconds % 60
+        parts = []
+        if hours:
+            parts.append(f"{hours} soat")
+        if minutes:
+            parts.append(f"{minutes} minut")
+        if secs or not parts:
+            parts.append(f"{secs} sekund")
+        total_time_str = ' '.join(parts)
 
         total_group_count = sum(l.student_count or 0 for l in lessons)
 
@@ -998,7 +1010,7 @@ def admin_monthly_excel(request):
             'name': support.user.get_full_name() or support.user.username,
             'total_lessons': total_lessons,
             'total_students': total_students,
-            'total_hours': round(total_minutes / 60, 1),
+            'total_hours': total_time_str,
             'active_students': active_students,
             'total_group_count': total_group_count,
         })
