@@ -160,6 +160,7 @@ export default function AdminSupportProfile() {
                             <p>{lesson.date}</p>
                             <p>{lesson.start_time}{lesson.end_time ? ` - ${lesson.end_time}` : ''}</p>
                             {lesson.duration_minutes && <p className="font-medium text-slate-500">{lesson.duration_minutes} min</p>}
+                            {lesson.student_count && <p className="font-medium text-slate-500">{lesson.student_count} ta student</p>}
                           </div>
                         </div>
                       ))
