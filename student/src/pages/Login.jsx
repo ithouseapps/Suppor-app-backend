@@ -15,8 +15,12 @@ export default function Login() {
     try {
       const data = await login(username, password);
       setUser(data.user);
-    } catch {
-      setError('Login yoki parol notogri');
+    } catch (err) {
+      if (!err.response) {
+        setError('Serverga ulanib bo\'lmadi. Internet yoki backendni tekshiring.');
+      } else {
+        setError(err.response?.data?.detail || 'Login yoki parol notog\'ri');
+      }
     }
   };
 
@@ -45,6 +49,8 @@ export default function Login() {
               </svg>
               <input
                 type="text"
+                name="username"
+                autocomplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
@@ -60,6 +66,8 @@ export default function Login() {
               </svg>
               <input
                 type="password"
+                name="password"
+                autocomplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
