@@ -986,12 +986,19 @@ def admin_monthly_excel(request):
         total_students = student_ids.count()
         student_users = User.objects.filter(id__in=list(student_ids), role='student') if student_ids else []
         active_students = ', '.join(s.get_full_name() or s.username for s in student_users)
+        total_minutes = 0
+        for lesson in lessons:
+            if lesson.end_time:
+                delta = lesson.end_time - lesson.start_time
+                total_minutes += int(delta.total_seconds() / 60)
+
         total_group_count = sum(l.student_count or 0 for l in lessons)
 
         support_data.append({
             'name': support.user.get_full_name() or support.user.username,
             'total_lessons': total_lessons,
             'total_students': total_students,
+            'total_hours': round(total_minutes / 60, 1),
             'active_students': active_students,
             'total_group_count': total_group_count,
         })
@@ -1009,8 +1016,8 @@ def admin_monthly_excel(request):
         cell.alignment = Alignment(horizontal='center', wrap_text=True)
         cell.border = thin_border
 
-    row_labels = ['Jami darslar', 'Jami studentlar', 'Guruhli studentlar', 'Faol studentlar']
-    fills = [header_fill, header_fill2, header_fill2, header_fill]
+    row_labels = ['Jami darslar', 'Jami studentlar', 'Jami soatlar', 'Guruhli studentlar', 'Faol studentlar']
+    fills = [header_fill, header_fill2, header_fill, header_fill2, header_fill]
     for r, (label, fill) in enumerate(zip(row_labels, fills), 2):
         cell = ws.cell(row=r, column=1, value=label)
         cell.font = Font(bold=True, color='FFFFFF', size=11)
@@ -1024,6 +1031,8 @@ def admin_monthly_excel(request):
             elif r == 3:
                 val = sd['total_students']
             elif r == 4:
+                val = sd['total_hours']
+            elif r == 5:
                 val = sd['total_group_count']
             else:
                 val = sd['active_students']
