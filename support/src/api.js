@@ -15,8 +15,21 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
+  async (err) => {
+    const originalRequest = err.config;
+    if (err.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refresh');
+      if (refreshToken) {
+        try {
+          const res = await axios.post(`${API_URL}/token/refresh/`, { refresh: refreshToken });
+          localStorage.setItem('access', res.data.access);
+          originalRequest.headers.Authorization = `Bearer ${res.data.access}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // refresh failed
+        }
+      }
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
       localStorage.removeItem('user');

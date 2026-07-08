@@ -13,10 +13,48 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
+  async (err) => {
+    const originalRequest = err.config;
+    if (err.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        }).catch((err) => Promise.reject(err));
+      }
+      originalRequest._retry = true;
+      isRefreshing = true;
+      const refreshToken = localStorage.getItem('refresh');
+      if (refreshToken) {
+        try {
+          const res = await axios.post(`${API_URL}/token/refresh/`, { refresh: refreshToken });
+          const newAccess = res.data.access;
+          localStorage.setItem('access', newAccess);
+          processQueue(null, newAccess);
+          originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+        }
+      }
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
       localStorage.removeItem('user');
