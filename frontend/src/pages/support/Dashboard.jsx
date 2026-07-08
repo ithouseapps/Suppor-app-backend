@@ -39,8 +39,11 @@ export default function SupportDashboard() {
     getSchedules().then((r) => setMySchedules(r.data)).catch(() => {});
 
     const completed = lessRes.filter((l) => !l.is_active);
-    const uniqueStudents = new Set(completed.map((l) => l.student)).size;
-    setTodayStats({ lessons: completed.length, students: uniqueStudents });
+    const indSet = new Set();
+    const grpMap = new Map();
+    completed.forEach(l => l.student_count ? grpMap.set(l.student, l.student_count) : indSet.add(l.student));
+    const totalStudents = indSet.size + [...grpMap.values()].reduce((a, b) => a + b, 0);
+    setTodayStats({ lessons: completed.length, students: totalStudents });
   };
 
   useEffect(() => { load(); }, []);
