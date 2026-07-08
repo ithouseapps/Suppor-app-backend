@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.utils.timezone import localtime
-from django.db.models import Count, Q, F
+from django.db.models import Count, Q, F, Sum, Case, When, IntegerField, Value
 from datetime import datetime
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import api_view, permission_classes, action
@@ -468,14 +468,18 @@ def dashboard_stats(request):
     today = timezone.now().date()
 
     today_lessons = Lesson.objects.filter(start_time__date=today)
-    today_bookings = Booking.objects.filter(date=today)
+    completed = today_lessons.filter(end_time__isnull=False)
 
-    total_students = today_lessons.filter(
-        end_time__isnull=False
-    ).values('student').distinct().count()
+    total_students = completed.aggregate(
+        total=Sum(Case(
+            When(student_count__isnull=False, then=F('student_count')),
+            default=Value(1),
+            output_field=IntegerField()
+        ))
+    )['total'] or 0
 
-    total_lessons = today_lessons.filter(end_time__isnull=False).count()
-    total_bookings = today_bookings.count()
+    total_lessons = completed.count()
+    total_bookings = Booking.objects.filter(date=today).count()
 
     active_lessons = Lesson.objects.filter(is_active=True)
     busy_ids = active_lessons.values_list('support_id', flat=True)
@@ -615,7 +619,6 @@ def support_profile_view(request):
     except AcademicSupport.DoesNotExist:
         return Response({'error': 'Support profile topilmadi'}, status=400)
 
-    # All lessons by this support, grouped by student
     lessons = Lesson.objects.filter(support=support).select_related(
         'student', 'subject', 'room'
     ).order_by('-start_time')
@@ -623,8 +626,11 @@ def support_profile_view(request):
     student_lessons = {}
     total_minutes = 0
     total_completed = 0
+    individual_count = 0
+    group_total = 0
     for lesson in lessons:
         sid = lesson.student.id
+        is_group = lesson.student_count is not None
         if sid not in student_lessons:
             student_lessons[sid] = {
                 'student': {
@@ -632,12 +638,18 @@ def support_profile_view(request):
                     'username': lesson.student.username,
                     'first_name': lesson.student.first_name,
                     'last_name': lesson.student.last_name,
+                    'is_group': is_group,
+                    'student_count': lesson.student_count,
                 },
                 'total_lessons': 0,
                 'completed_lessons': 0,
                 'total_minutes': 0,
                 'lessons': [],
             }
+            if is_group:
+                group_total += lesson.student_count or 1
+            else:
+                individual_count += 1
         student_lessons[sid]['total_lessons'] += 1
         if not lesson.is_active:
             student_lessons[sid]['completed_lessons'] += 1
@@ -652,7 +664,7 @@ def support_profile_view(request):
     return Response({
         'support': AcademicSupportSerializer(support).data,
         'students': list(student_lessons.values()),
-        'total_students': len(student_lessons),
+        'total_students': individual_count + group_total,
         'total_lessons': lessons.count(),
         'total_completed': total_completed,
         'total_minutes': total_minutes,
@@ -887,8 +899,11 @@ def admin_support_profile_view(request, support_id):
     student_lessons = {}
     total_minutes = 0
     total_completed = 0
+    individual_count = 0
+    group_total = 0
     for lesson in lessons:
         sid = lesson.student.id
+        is_group = lesson.student_count is not None
         if sid not in student_lessons:
             student_lessons[sid] = {
                 'student': {
@@ -896,12 +911,18 @@ def admin_support_profile_view(request, support_id):
                     'username': lesson.student.username,
                     'first_name': lesson.student.first_name,
                     'last_name': lesson.student.last_name,
+                    'is_group': is_group,
+                    'student_count': lesson.student_count,
                 },
                 'total_lessons': 0,
                 'completed_lessons': 0,
                 'total_minutes': 0,
                 'lessons': [],
             }
+            if is_group:
+                group_total += lesson.student_count or 1
+            else:
+                individual_count += 1
         student_lessons[sid]['total_lessons'] += 1
         if not lesson.is_active:
             student_lessons[sid]['completed_lessons'] += 1
@@ -916,7 +937,7 @@ def admin_support_profile_view(request, support_id):
     return Response({
         'support': AcademicSupportSerializer(support).data,
         'students': list(student_lessons.values()),
-        'total_students': len(student_lessons),
+        'total_students': individual_count + group_total,
         'total_lessons': lessons.count(),
         'total_completed': total_completed,
         'total_minutes': total_minutes,
@@ -982,10 +1003,23 @@ def admin_monthly_excel(request):
             is_active=False
         )
         total_lessons = lessons.count()
-        student_ids = lessons.values_list('student_id', flat=True).distinct()
-        total_students = student_ids.count()
-        student_users = User.objects.filter(id__in=list(student_ids), role='student') if student_ids else []
-        active_students = ', '.join(s.get_full_name() or s.username for s in student_users)
+
+        individual_lessons = lessons.filter(student_count__isnull=True)
+        group_lessons = lessons.filter(student_count__isnull=False)
+
+        individual_ids = individual_lessons.values_list('student_id', flat=True).distinct()
+        total_individual = individual_ids.count()
+        individual_users = User.objects.filter(id__in=list(individual_ids)) if individual_ids else []
+        individual_names = ', '.join(s.get_full_name() or s.username for s in individual_users)
+
+        total_group = sum(l.student_count or 0 for l in group_lessons)
+        group_parts = []
+        for l in group_lessons:
+            name = l.student.get_full_name() or l.student.username
+            cnt = l.student_count or 1
+            group_parts.append(f"{name}({cnt})")
+        group_names = ', '.join(group_parts)
+
         total_seconds = 0
         for lesson in lessons:
             if lesson.end_time:
@@ -1004,15 +1038,15 @@ def admin_monthly_excel(request):
             parts.append(f"{secs} sekund")
         total_time_str = ' '.join(parts)
 
-        total_group_count = sum(l.student_count or 0 for l in lessons)
-
         support_data.append({
             'name': support.user.get_full_name() or support.user.username,
             'total_lessons': total_lessons,
-            'total_students': total_students,
+            'total_individual': total_individual,
+            'total_group': total_group,
+            'total_students_all': total_individual + total_group,
             'total_hours': total_time_str,
-            'active_students': active_students,
-            'total_group_count': total_group_count,
+            'individual_student_names': individual_names,
+            'group_student_names': group_names,
         })
 
     cell = ws.cell(row=1, column=1, value=f"{month}.{year} hisobot")
@@ -1028,9 +1062,17 @@ def admin_monthly_excel(request):
         cell.alignment = Alignment(horizontal='center', wrap_text=True)
         cell.border = thin_border
 
-    row_labels = ['Jami darslar', 'Jami studentlar', 'Jami soatlar', 'Guruhli studentlar', 'Faol studentlar']
-    fills = [header_fill, header_fill2, header_fill, header_fill2, header_fill]
-    for r, (label, fill) in enumerate(zip(row_labels, fills), 2):
+    row_defs = [
+        ('Jami darslar', 'total_lessons'),
+        ('Yakka studentlar', 'total_individual'),
+        ('Guruhli studentlar', 'total_group'),
+        ('Jami studentlar', 'total_students_all'),
+        ('Jami soatlar', 'total_hours'),
+        ('Faol studentlar (yakka)', 'individual_student_names'),
+        ('Guruh nomlari', 'group_student_names'),
+    ]
+    fills = [header_fill, header_fill2, header_fill, header_fill2, header_fill, header_fill2, header_fill]
+    for r, ((label, key), fill) in enumerate(zip(row_defs, fills), 2):
         cell = ws.cell(row=r, column=1, value=label)
         cell.font = Font(bold=True, color='FFFFFF', size=11)
         cell.fill = fill
@@ -1038,16 +1080,7 @@ def admin_monthly_excel(request):
         cell.border = thin_border
 
         for i, sd in enumerate(support_data, 2):
-            if r == 2:
-                val = sd['total_lessons']
-            elif r == 3:
-                val = sd['total_students']
-            elif r == 4:
-                val = sd['total_hours']
-            elif r == 5:
-                val = sd['total_group_count']
-            else:
-                val = sd['active_students']
+            val = sd[key]
             cell = ws.cell(row=r, column=i, value=val)
             cell.border = thin_border
             cell.alignment = Alignment(horizontal='center', wrap_text=True)

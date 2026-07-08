@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
+from django.db.models import Sum, Case, When, F, IntegerField, Value
 from django.utils.timezone import localtime
 from .models import (
     User, Room, Subject, AcademicSupport,
@@ -318,11 +319,18 @@ class SupportDashboardSerializer(serializers.ModelSerializer):
     def get_today_students_count(self, obj):
         from django.utils import timezone
         today = timezone.now().date()
-        return Lesson.objects.filter(
+        result = Lesson.objects.filter(
             support=obj,
             start_time__date=today,
             end_time__isnull=False
-        ).values('student').distinct().count()
+        ).aggregate(
+            total=Sum(Case(
+                When(student_count__isnull=False, then=F('student_count')),
+                default=Value(1),
+                output_field=IntegerField()
+            ))
+        )
+        return result['total'] or 0
 
     def get_status(self, obj):
         has_active = Lesson.objects.filter(support=obj, is_active=True).exists()

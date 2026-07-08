@@ -58,7 +58,7 @@ export default function SupportHistory() {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200/60">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
           <span>Jami: <strong className="text-slate-800">{completedLessons.length}</strong> ta dars</span>
-          <span><strong className="text-slate-800">{new Set(completedLessons.map((l) => l.student)).size}</strong> ta student</span>
+          <span><strong className="text-slate-800">{(() => { const ind = new Set(); const grp = new Map(); completedLessons.forEach(l => l.student_count ? grp.set(l.student, l.student_count) : ind.add(l.student)); return ind.size + [...grp.values()].reduce((a, b) => a + b, 0); })()}</strong> ta student</span>
         </div>
         <div className="divide-y divide-slate-100">
           {completedLessons.length === 0 ? (

@@ -64,7 +64,7 @@ export default function SupportHistory() {
             <span>Jami: <strong>{completedLessons.length}</strong> ta dars</span>
           </div>
           <span>
-            {new Set(completedLessons.map((l) => l.student)).size} ta student
+            {(() => { const ind = new Set(); const grp = new Map(); completedLessons.forEach(l => l.student_count ? grp.set(l.student, l.student_count) : ind.add(l.student)); return ind.size + [...grp.values()].reduce((a, b) => a + b, 0); })()} ta student
           </span>
         </div>
         <div className="divide-y divide-slate-200/60">
