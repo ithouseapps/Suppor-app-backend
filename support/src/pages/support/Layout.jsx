@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth';
+import InstallBanner from '../../components/InstallBanner';
 
 const DashboardIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,6 +60,7 @@ export default function SupportLayout() {
         </div>
       </header>
 
+      <InstallBanner />
       <main className="flex-1 px-4 pt-4 pb-20 overflow-auto">
         <Outlet />
       </main>

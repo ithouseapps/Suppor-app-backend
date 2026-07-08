@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
+import InstallBanner from '../../components/InstallBanner';
 
 const ClockIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,6 +57,7 @@ export default function StudentLayout() {
         </div>
       </header>
 
+      <InstallBanner />
       <main className="flex-1 px-4 pt-4 pb-24 overflow-auto">
         <Outlet />
       </main>

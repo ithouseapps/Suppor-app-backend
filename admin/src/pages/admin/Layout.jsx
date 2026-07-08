@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth';
+import InstallBanner from '../../components/InstallBanner';
 
 const telegramIcon = <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>;
 
@@ -148,6 +149,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
+        <InstallBanner />
         <main className="flex-1 p-4 md:p-6 overflow-auto pb-20 md:pb-6">
           <Outlet />
         </main>
