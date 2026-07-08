@@ -79,7 +79,10 @@ export default function AdminSupportProfile() {
                       {item.student.username[0].toUpperCase()}
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">{item.student.first_name || item.student.username}</p>
+                      <p className="font-medium">
+                        {item.student.first_name || item.student.username}
+                        {item.student.is_group && <span className="text-blue-600 ml-1">({item.student.student_count}ta)</span>}
+                      </p>
                       <p className="text-sm text-gray-500">{item.student.username}</p>
                     </div>
                   </div>

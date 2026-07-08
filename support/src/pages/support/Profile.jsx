@@ -204,8 +204,11 @@ export default function SupportProfile() {
                       {item.student.username[0].toUpperCase()}
                     </div>
                     <div className="text-left">
-                      <p className="font-medium text-slate-800 text-sm">{item.student.username}</p>
-                      <p className="text-xs text-slate-500">{item.student.first_name} {item.student.last_name}</p>
+                            <p className="font-medium text-slate-800 text-sm">
+                              {item.student.username}
+                              {item.student.is_group && <span className="text-blue-600 ml-1">({item.student.student_count}ta)</span>}
+                            </p>
+                            <p className="text-xs text-slate-500">{item.student.first_name} {item.student.last_name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-xs shrink-0">
