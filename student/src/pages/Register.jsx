@@ -21,7 +21,15 @@ export default function Register() {
       await register({ ...form, role: 'student' });
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.username?.[0] || 'Xatolik yuz berdi');
+      const data = err.response?.data;
+      if (typeof data === 'string') {
+        setError(data);
+      } else if (data?.detail) {
+        setError(data.detail);
+      } else {
+        const msgs = Object.entries(data || {}).map(([key, val]) => `${key}: ${Array.isArray(val) ? val[0] : val}`).join(', ');
+        setError(msgs || 'Xatolik yuz berdi');
+      }
     }
     setLoading(false);
   };
