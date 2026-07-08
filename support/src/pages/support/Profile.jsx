@@ -240,6 +240,7 @@ export default function SupportProfile() {
                               <div className="flex gap-2 text-xs text-slate-400 mt-0.5">
                                 {lesson.subject_name && <span>{lesson.subject_name}</span>}
                                 {lesson.room_name && <span>| {lesson.room_name}</span>}
+                                {lesson.student_count && <span>| {lesson.student_count} o'quvchi</span>}
                               </div>
                             </div>
                           </div>

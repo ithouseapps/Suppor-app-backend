@@ -86,6 +86,11 @@ export default function SupportHistory() {
                           {l.subject_name}
                         </span>
                       )}
+                      {l.student_count && (
+                        <span className="inline-block bg-slate-100 text-slate-600 text-[10px] px-2 py-0.5 rounded mt-1.5 font-medium ml-1">
+                          {l.student_count} o'quvchi
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="text-right text-xs text-slate-400 shrink-0 ml-3">
